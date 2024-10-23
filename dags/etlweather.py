@@ -34,7 +34,7 @@ with DAG(dag_id="etlweather",
         response = request.run(endpoint)
 
         if response.status_code == 200:
-            return json.loads(response.content)
+            return response.json()
         else:
             raise Exception(f"Failed to extract data from the OpenMeteo API {response.status_code}")
 
@@ -46,8 +46,8 @@ with DAG(dag_id="etlweather",
         """
         current_weather = weather_data['current_weather']
         transformed_weather = {
-            'latitude': current_weather['latitude'],
-            'longitude': current_weather['longitude'],
+            'latitude': LATITUDE,
+            'longitude': LONGITUDE,
             'temperature': current_weather['temperature'],
             'windspeed': current_weather['windspeed'],
             'winddirection': current_weather['winddirection'],
@@ -92,9 +92,7 @@ with DAG(dag_id="etlweather",
         cursor.close() # Closes the cursor
 
 
-        ## DAG workflow(ETL Pipeline):
-        weather_data = extract_weather_data()
-        transformed_weather = transform_weather_data(weather_data)
-        load_weather_data(transformed_weather)
-
-
+    ## DAG workflow(ETL Pipeline): Chaining the tasks to the DAG:
+    weather_data = extract_weather_data()
+    transformed_weather = transform_weather_data(weather_data)
+    load_weather_data(transformed_weather)
